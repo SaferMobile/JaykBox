@@ -16,6 +16,7 @@ public class SMSSenderActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
     }
     
     //---sends an SMS message to another device---
@@ -24,7 +25,8 @@ public class SMSSenderActivity extends Activity {
         PendingIntent pi = PendingIntent.getActivity(this, 0,
             new Intent(this, SMSSenderActivity.class), 0);                
         SmsManager sms = SmsManager.getDefault();
-        sms.sendTextMessage(phoneNumber, null, message, pi, null);        
+        sms.sendTextMessage(phoneNumber, null, message, pi, null);      
+        
     } 
     
     //---sends an SMS message to another device---
@@ -88,6 +90,8 @@ public class SMSSenderActivity extends Activity {
         }, new IntentFilter(DELIVERED));        
  
         SmsManager sms = SmsManager.getDefault();
+        
         sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);   
+        
     }    
 }

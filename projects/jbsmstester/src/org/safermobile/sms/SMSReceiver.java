@@ -1,5 +1,7 @@
 package org.safermobile.sms;
 
+import java.util.Date;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,13 +25,15 @@ public class SMSReceiver extends BroadcastReceiver {
             msgs = new SmsMessage[pdus.length];            
             for (int i=0; i<msgs.length; i++){
                 msgs[i] = SmsMessage.createFromPdu((byte[])pdus[i]);                
-                str += "SMS from " + msgs[i].getOriginatingAddress();                     
-                str += " :";
-                str += msgs[i].getMessageBody().toString();
-                str += "\n";        
-            }
-            //---display the new SMS message---
-            Toast.makeText(context, str, Toast.LENGTH_SHORT).show();
+                
+		        String from = msgs[i].getOriginatingAddress();
+		        String to = msgs[i].getServiceCenterAddress();
+		        String msg = msgs[i].getMessageBody().toString();
+		        Date rec = new Date(msgs[i].getTimestampMillis());
+		        
+		        SMSLogger.logReceive(from, to, msg, rec);
+		        
+        	}
         }                         
     }
 }
