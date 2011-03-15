@@ -7,13 +7,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.telephony.TelephonyManager;
 import android.widget.Toast;
 
 public class SMSReceiver extends BroadcastReceiver {
- 
+
+
+	
+	 
     @Override
     public void onReceive(Context context, Intent intent) 
     {
+    	/*
+    	try
+		{	
+			SMSLogger.init();
+		}
+		catch (Exception e)
+		{
+			Toast.makeText(context, "Error setting up SMS Log: " + e.getMessage(), Toast.LENGTH_LONG).show();
+		}
+		*/
+    	
         //---get the SMS message passed in---
         Bundle bundle = intent.getExtras();        
         SmsMessage[] msgs = null;
@@ -31,7 +46,7 @@ public class SMSReceiver extends BroadcastReceiver {
 		        String msg = msgs[i].getMessageBody().toString();
 		        Date rec = new Date(msgs[i].getTimestampMillis());
 		        
-		        SMSLogger.logReceive(from, to, msg, rec);
+		       // SMSLogger.logReceive(from, to, msg, rec);
 		        
         	}
         }                         

@@ -1,5 +1,7 @@
 package org.safermobile.sms;
 
+import java.util.Date;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,10 +12,13 @@ import android.widget.Toast;
 public class SMSSentStatusReceiver extends BroadcastReceiver {
 
 	private String _toPhoneNumber;
+	private String _fromPhoneNumber;
+	
 	private String _toMsg;
 	
-	public SMSSentStatusReceiver (String toPhoneNumber, String msg)
+	public SMSSentStatusReceiver (String fromPhoneNumber, String toPhoneNumber, String msg)
 	{
+		_fromPhoneNumber = fromPhoneNumber;
 		_toPhoneNumber = toPhoneNumber;
 		_toMsg = msg;
 	}
@@ -23,6 +28,8 @@ public class SMSSentStatusReceiver extends BroadcastReceiver {
 		
 		int resultCode = getResultCode();
 		String resultTxt = "";
+		
+		Date ts = new Date();
 		
         switch (getResultCode())
         {
@@ -43,6 +50,7 @@ public class SMSSentStatusReceiver extends BroadcastReceiver {
                 break;
         }
         
+        SMSLogger.logError(_fromPhoneNumber, _toPhoneNumber, resultTxt, ts);
     }
 
 }
