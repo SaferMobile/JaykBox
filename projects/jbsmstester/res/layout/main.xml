@@ -1,12 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    >
-<TextView  
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" 
-    android:text="@string/hello"
-    />
-</LinearLayout>
+    android:layout_height="fill_parent">
+    
+    	<RelativeLayout android:id="@+id/layoutHeaderMain"
+		android:layout_width="fill_parent"
+		android:layout_height="30dp"
+		android:layout_gravity="center_horizontal"
+		android:background="#A0909090">
+		<TextView android:id="@+id/radioModeText"
+ 		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"           
+            android:text="powered by SaferMobile"
+			android:layout_marginTop="9px"
+			android:layout_marginRight="0px"
+			android:gravity="right"
+			android:layout_toLeftOf="@+id/radioModeImage"
+            android:textColor="#333333" />
+	</RelativeLayout>
+	
+     <ScrollView  android:orientation="vertical"
+      android:layout_height="wrap_content"
+         android:layout_width="fill_parent"  android:id="@+id/logScrollView"
+          xmlns:android="http://schemas.android.com/apk/res/android">
+         
+         <TextView android:id="@+id/messageLog"
+         android:layout_height="wrap_content"
+         android:layout_width="fill_parent"
+         android:layout_x="2px"
+		 android:layout_y="2px"
+         android:textSize="14px"
+         android:background="#A0222222"
+         />	
+        
+	</ScrollView>
+     	
+     </LinearLayout>
+            
