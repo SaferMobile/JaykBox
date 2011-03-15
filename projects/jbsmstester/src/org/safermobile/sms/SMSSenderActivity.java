@@ -1,5 +1,7 @@
 package org.safermobile.sms;
 
+import java.util.Date;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -8,15 +10,23 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.telephony.SmsManager;
-import android.widget.Toast;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.TextView;
 
 public class SMSSenderActivity extends Activity {
+	
+	private String thisPhoneNumber;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+        thisPhoneNumber = ""; //get the local device number
+        
+        SMSLogger.setLogView((TextView)findViewById(R.id.messageLog));
     }
     
     //---sends an SMS message to another device---
@@ -27,7 +37,13 @@ public class SMSSenderActivity extends Activity {
         SmsManager sms = SmsManager.getDefault();
         sms.sendTextMessage(phoneNumber, null, message, pi, null);      
         
+        SMSLogger.logSend(thisPhoneNumber, phoneNumber, message, new Date());
     } 
+    
+    private void startSMSTest ()
+    {
+    	sendSMS("2128881111","foo bar");
+    }
     
     //---sends an SMS message to another device---
     private void sendSMSMonitor(String phoneNumber, String message)
@@ -42,34 +58,8 @@ public class SMSSenderActivity extends Activity {
             new Intent(DELIVERED), 0);
  
         //---when the SMS has been sent---
-        registerReceiver(new BroadcastReceiver(){
-            @Override
-            public void onReceive(Context arg0, Intent arg1) {
-                switch (getResultCode())
-                {
-                    case Activity.RESULT_OK:
-                        Toast.makeText(getBaseContext(), "SMS sent", 
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                        Toast.makeText(getBaseContext(), "Generic failure", 
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        Toast.makeText(getBaseContext(), "No service", 
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case SmsManager.RESULT_ERROR_NULL_PDU:
-                        Toast.makeText(getBaseContext(), "Null PDU", 
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        Toast.makeText(getBaseContext(), "Radio off", 
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        }, new IntentFilter(SENT));
+        SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(phoneNumber, message);
+        registerReceiver(statusRev, new IntentFilter(SENT));
  
         //---when the SMS has been delivered---
         registerReceiver(new BroadcastReceiver(){
@@ -78,12 +68,14 @@ public class SMSSenderActivity extends Activity {
                 switch (getResultCode())
                 {
                     case Activity.RESULT_OK:
-                        Toast.makeText(getBaseContext(), "SMS delivered", 
-                                Toast.LENGTH_SHORT).show();
+
+                    	//  SMSLogger.logDelivery(thisPhoneNumber, phoneNumber, "delivered", ts)
+
                         break;
                     case Activity.RESULT_CANCELED:
-                        Toast.makeText(getBaseContext(), "SMS not delivered", 
-                                Toast.LENGTH_SHORT).show();
+                        
+                        //  SMSLogger.logDelivery(thisPhoneNumber, phoneNumber, "delivered", ts)
+
                         break;                        
                 }
             }
@@ -92,6 +84,38 @@ public class SMSSenderActivity extends Activity {
         SmsManager sms = SmsManager.getDefault();
         
         sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);   
-        
+        SMSLogger.logSend(thisPhoneNumber, phoneNumber, message, new Date());
+
     }    
+    
+    /*
+     * Create the UI Options Menu (non-Javadoc)
+     * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+     */
+     public boolean onCreateOptionsMenu(Menu menu) {
+         super.onCreateOptionsMenu(menu);
+         
+         MenuItem mItem = null;
+         
+         mItem = menu.add(0, 1, Menu.NONE, "Start Test");
+        
+        
+         return true;
+     }
+     
+     /* When a menu item is selected launch the appropriate view or activity
+      * (non-Javadoc)
+ 	 * @see android.app.Activity#onMenuItemSelected(int, android.view.MenuItem)
+ 	 */
+ 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+ 		
+ 		super.onMenuItemSelected(featureId, item);
+ 		
+ 		if (item.getItemId() == 1)
+ 		{
+ 			startSMSTest();
+ 		}
+ 		
+         return true;
+ 	}
 }

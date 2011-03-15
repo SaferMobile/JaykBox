@@ -3,33 +3,57 @@ package org.safermobile.sms;
 import java.util.Date;
 
 import android.util.Log;
+import android.widget.TextView;
 
 public class SMSLogger {
 
 	
 	private final static String TAG = "JBSMS";
+	private static TextView _tvLog;
+	
+	public static void setLogView (TextView tvLog)
+	{
+		_tvLog = tvLog;
+	}
 	
 	public static void logSend (String from, String to, String smsMsg, Date sent)
 	{
-		String[] vals = {"send",from,to,smsMsg,sent.getTime()+""};
-		Log.i(TAG, generateCSV(vals));
+		String[] vals = {"sent",from,to,smsMsg,sent.getTime()+""};
+		String log = generateCSV(vals);
+		Log.i(TAG, log);
+		
+		if (_tvLog != null)
+		{
+			_tvLog.append(log);
+			_tvLog.append("\n");
+
+		}
 	}
 	
 	public static void logReceive (String from, String to, String smsMsg, Date rec)
 	{
 		String[] vals = {"rec",from,to,smsMsg,rec.getTime()+""};
-		Log.i(TAG, generateCSV(vals));
+		
+		String log = generateCSV(vals);
+		Log.i(TAG, log);
+		
+		if (_tvLog != null)
+		{
+			_tvLog.append(log);
+			_tvLog.append("\n");
+
+		}
 	}
 	
 	public static void logError (String from, String to, String error, Date ts)
 	{
-		String[] vals = {"error",from,to,error,ts.getTime()+""};
+		String[] vals = {"err",from,to,error,ts.getTime()+""};
 		Log.i(TAG, generateCSV(vals));
 	}
 	
 	public static void logDelivery (String from, String to, String deliveryStatus, Date ts)
 	{
-		String[] vals = {"delivery",from,to,deliveryStatus,ts.getTime()+""};
+		String[] vals = {"del",from,to,deliveryStatus,ts.getTime()+""};
 		Log.i(TAG, generateCSV(vals));
 	}
 	
