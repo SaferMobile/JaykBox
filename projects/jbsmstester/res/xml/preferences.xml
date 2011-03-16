@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+<PreferenceCategory android:title="General Settings">
+
+
+<EditTextPreference android:key="pref_default_recipient"
+android:defaultValue=""
+android:title="Default Recipient"
+android:summary="default phone number to send msgs to"
+android:dialogTitle="Default Recipient (+12225551212))"
+/>
+
+<CheckBoxPreference 
+android:defaultValue="false" 
+android:key="pref_use_data"
+android:title="Use Data Port"
+android:summary="Send SMS as data messages not text"
+android:enabled="true"/> 
+
+</PreferenceCategory>
+
+
+</PreferenceScreen>
