@@ -18,14 +18,18 @@ public class SMSLogger {
 
 	private int lineNum = 1;
 	
-	private String _logTag = null;
+	private String _logMode = null;
 	
 	private String basePath = "/sdcard/jbsms";
 	private String logFilePath = null;
 	
-	public SMSLogger (String logTag) throws IOException
+	public final static String MODE_SEND = "send";
+	public final static String MODE_RECV = "recv";
+	public final static String MODE_RECV_DATA = "recvdata";
+	
+	public SMSLogger (String logMode)
 	{
-		_logTag = logTag;
+		_logMode = logMode;
 		
 		if (logFilePath == null)
 		{
@@ -33,14 +37,14 @@ public class SMSLogger {
 		}
 	}
 	
-	public void rotateLog () throws IOException
+	public void rotateLog () 
 	{
 		File fileDir = new File(basePath);
 		if (!fileDir.exists())
 			fileDir.mkdir();
 		
 		Date logDate = new Date();
-		logFilePath = basePath + "/jbsmstest" + "-" + _logTag + "-" + logDate.getYear() + logDate.getMonth() + logDate.getDate() + ".csv";
+		logFilePath = basePath + "/jbsmstest" + "-" + _logMode + "-" + logDate.getYear() + logDate.getMonth() + logDate.getDate() + ".csv";
 		
 	}
 	

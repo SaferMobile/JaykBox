@@ -22,7 +22,7 @@ public class MainTabActivity extends TabActivity {
 	    intent = new Intent().setClass(this, SMSSenderActivity.class);
 
 	    // Initialize a TabSpec for each tab and add it to the TabHost
-	    spec = tabHost.newTabSpec("send").setIndicator("Send")
+	    spec = tabHost.newTabSpec("home").setIndicator("Home")
 	                  .setContent(intent);
 	    tabHost.addTab(spec);
 
@@ -31,6 +31,19 @@ public class MainTabActivity extends TabActivity {
 	                  .setContent(intent);
 	    tabHost.addTab(spec);
 	
+	    intent = new Intent().setClass(this, LogViewActivity.class);
+	    intent.putExtra("mode", SMSLogger.MODE_SEND);
+	    
+	    spec = tabHost.newTabSpec("sent").setIndicator("Sent")
+	                  .setContent(intent);
+	    tabHost.addTab(spec);
+	    
+	    intent = new Intent().setClass(this, LogViewActivity.class);
+	    intent.putExtra("mode", SMSLogger.MODE_RECV);
+	    
+	    spec = tabHost.newTabSpec("recv").setIndicator("Received")
+	                  .setContent(intent);
+	    tabHost.addTab(spec);
 	    
 	    tabHost.setCurrentTab(0);
 	}

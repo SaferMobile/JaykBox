@@ -1,5 +1,6 @@
 package org.safermobile.sms;
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +15,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
@@ -31,9 +34,9 @@ public class SMSSenderActivity extends Activity {
 	private SmsManager sms = SmsManager.getDefault();
     
 	public final static short SMS_DATA_PORT = 7027;
-	boolean useDataPort = true;
+	boolean _useDataPort = true;
 
-	private TextView textView = null;
+	private TextView _textView = null;
 	
 	private final static String SENT = "SMS_SENT";
 	private final static String DELIVERED = "SMS_DELIVERED";
@@ -46,12 +49,14 @@ public class SMSSenderActivity extends Activity {
         
         _fromPhoneNumber = getMyPhoneNumber(); //get the local device number
         
-        textView = (TextView)findViewById(R.id.messageLog);
+        _textView = (TextView)findViewById(R.id.messageLog);
+        
+        loadPrefs();
         
     	try
 		{	
-    		_smsLogger = new SMSLogger("send");
-    		_smsLogger.setLogView(textView);
+    		_smsLogger = new SMSLogger(SMSLogger.MODE_SEND);
+    		_smsLogger.setLogView(_textView);
 		}
 		catch (Exception e)
 		{
@@ -60,6 +65,28 @@ public class SMSSenderActivity extends Activity {
 		
 	
         
+    }
+    
+    @Override
+	protected void onResume() {
+		super.onResume();
+		
+		 loadPrefs();
+	}
+
+	@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+     
+    	   loadPrefs();
+    }
+    
+    private void loadPrefs ()
+    {
+    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplication());
+
+        _toPhoneNumber = prefs.getString("pref_default_recipient", "");
+        _useDataPort = prefs.getBoolean("pref_use_data", false);
+
     }
     
     private String getMyPhoneNumber(){
@@ -102,7 +129,7 @@ public class SMSSenderActivity extends Activity {
 	private void startSMSTest ()
     {
 		
-		textView.setText("");
+		_textView.setText("");
 		
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -120,7 +147,7 @@ public class SMSSenderActivity extends Activity {
     	alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
     	public void onClick(DialogInterface dialog, int whichButton) {
     	  _toPhoneNumber = input.getText().toString();
-    	  sendTestMessages (_toPhoneNumber, useDataPort);
+    	  sendTestMessages (_toPhoneNumber, _useDataPort);
     	  }
     	});
 
@@ -135,20 +162,13 @@ public class SMSSenderActivity extends Activity {
     
     private void sendTestMessages (String toPhoneNumber, boolean useDataPort)
     {
-    	try {
-			_smsLogger.rotateLog();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	
+    	_smsLogger.rotateLog();
+		
     	Iterator<String> itMsgs = loadTestMessageList().iterator();
     	
     	while (itMsgs.hasNext())
     		sendSMS(toPhoneNumber,itMsgs.next(), useDataPort);
-    	
-    	String logFile = _smsLogger.getLogFilePath();
-    	textView.setText(Utils.loadTextFile(logFile));
+    
     }
     
     private ArrayList<String> loadTestMessageList ()
@@ -215,7 +235,7 @@ public class SMSSenderActivity extends Activity {
          MenuItem mItem = null;
          
          mItem = menu.add(0, 1, Menu.NONE, "Start Test");
-        
+         mItem = menu.add(0, 2, Menu.NONE, "Settings");
         
          return true;
      }
@@ -231,6 +251,11 @@ public class SMSSenderActivity extends Activity {
  		if (item.getItemId() == 1)
  		{
  			startSMSTest();
+ 		}
+ 		else if (item.getItemId() == 2)
+ 		{
+        	startActivityForResult(new Intent(getBaseContext(), SettingsActivity.class), 1);
+
  		}
  		
          return true;
