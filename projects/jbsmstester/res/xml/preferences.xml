@@ -12,6 +12,13 @@ android:summary="default phone number to send msgs to"
 android:dialogTitle="Default Recipient (+12225551212))"
 />
 
+<EditTextPreference android:key="pref_time_delay"
+android:defaultValue="1000"
+android:title="Time Delay (ms)"
+android:summary="Delay between each message send (milliseconds)"
+android:dialogTitle="Time Delay (ms)"
+/>
+
 <CheckBoxPreference 
 android:defaultValue="false" 
 android:key="pref_use_data"

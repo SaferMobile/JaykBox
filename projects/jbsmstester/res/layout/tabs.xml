@@ -12,12 +12,12 @@
 		<TextView android:id="@+id/radioModeText"
  		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"           
-            android:text="SMSTester - powered by SaferMobile"
+            android:text="SMSTester - send/recv SMS testing tool"
 			android:layout_marginTop="9px"
 			android:layout_marginRight="0px"
 			android:gravity="right"
 			android:layout_toLeftOf="@+id/radioModeImage"
-            android:textColor="#333333" />
+            android:textColor="#999999" />
 	</RelativeLayout>
 <TabHost xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@android:id/tabhost"

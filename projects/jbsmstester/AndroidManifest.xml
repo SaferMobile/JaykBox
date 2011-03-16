@@ -38,8 +38,9 @@
             </intent-filter> 
         </receiver>
         
-          <activity android:name=".SettingsActivity">
-        </activity>
+          <activity android:name=".SettingsActivity"/>
+          <activity android:name=".LogViewActivity"/>
+        
         
     </application>
     

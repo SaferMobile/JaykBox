@@ -15,7 +15,7 @@
          <TextView android:id="@+id/messageLog"
          android:layout_height="wrap_content"
          android:layout_width="fill_parent"
-         android:text="\n\n\n\nEdit the keywords, then open the menu to 'Start' the SMS test send"
+         android:text=""
          />	
         
 	</ScrollView>
