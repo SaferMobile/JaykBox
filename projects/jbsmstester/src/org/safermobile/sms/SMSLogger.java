@@ -16,8 +16,6 @@ public class SMSLogger {
 	private final String TAG = "JBSMS";
 	private TextView _tvLog;
 
-	private int lineNum = 1;
-	
 	private String _logMode = null;
 	
 	private String basePath = "/sdcard/jbsms";
@@ -74,9 +72,9 @@ public class SMSLogger {
 	
 	}
 	
-	public void logReceive (String from, String to, String smsMsg, Date rec)
+	public void logReceive (String mode, String from, String to, String smsMsg, Date rec)
 	{
-		String[] vals = {"rec",from,to,smsMsg,rec.toGMTString()};
+		String[] vals = {mode,from,to,smsMsg,rec.toGMTString()};
 		
 		String log = generateCSV(vals) + "\n";
 		
@@ -126,8 +124,6 @@ public class SMSLogger {
 	{
 		StringBuffer csv = new StringBuffer();
 		
-		csv.append(lineNum + ",");
-		
 		for (int i = 0; i < params.length; i++)
 		{
 			csv.append('"');
@@ -139,7 +135,6 @@ public class SMSLogger {
 			
 		}
 		
-		lineNum++;
 		
 		return csv.toString();
 	}

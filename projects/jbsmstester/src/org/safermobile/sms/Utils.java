@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import android.content.Context;
+
 public class Utils {
 
 
@@ -65,6 +67,25 @@ public class Utils {
 	    	
 	    }
 	 
+	 public static String loadAssetText (Context context, String path) throws IOException
+	 {
+		  InputStream is = context.getAssets().open(path);
+
+          // We guarantee that the available method returns the total
+          // size of the asset...  of course, this does mean that a single
+          // asset can't be more than 2 gigs.
+          int size = is.available();
+
+          // Read the entire asset into a local byte buffer.
+          byte[] buffer = new byte[size];
+          is.read(buffer);
+          is.close();
+
+          // Convert the buffer into a string.
+          String text = new String(buffer);
+          
+          return text;
+	 }
 
 		/*
 		 * Load the log file text

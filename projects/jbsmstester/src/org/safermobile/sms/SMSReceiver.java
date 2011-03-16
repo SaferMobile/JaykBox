@@ -49,7 +49,7 @@ public class SMSReceiver extends BroadcastReceiver {
 		        String msg = msgs[i].getMessageBody().toString();
 		        Date rec = new Date(msgs[i].getTimestampMillis());
 		        
-		        _smsLogger.logReceive(from, to, msg, rec);
+		        _smsLogger.logReceive("recv-text",from, to, msg, rec);
 		        
 		        Toast.makeText(context, "recvd msg from: " + from, Toast.LENGTH_SHORT).show();
         	}

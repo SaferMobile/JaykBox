@@ -56,9 +56,9 @@ public class SMSDataReceiver extends BroadcastReceiver {
 		        	
 		        Date rec = new Date(msgs[i].getTimestampMillis());
 		        
-		        _smsLogger.logReceive(from, to, msg, rec);
+		        _smsLogger.logReceive("recv-data",from, to, msg, rec);
 		        
-		        Toast.makeText(context, "recvd DATA msg from: " + from, Toast.LENGTH_SHORT).show();
+		        Toast.makeText(context, "recvd DATA msg from " + from + ": \"" + msg + "\"" , Toast.LENGTH_SHORT).show();
         	}
         }                         
     }

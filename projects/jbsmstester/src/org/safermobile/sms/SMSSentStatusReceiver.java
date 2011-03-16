@@ -54,7 +54,6 @@ public class SMSSentStatusReceiver extends BroadcastReceiver {
         
         _smsLogger.logError(_fromPhoneNumber, _toPhoneNumber, resultTxt, ts);
         
-        Toast.makeText(context, _toPhoneNumber + ": " + resultTxt, Toast.LENGTH_SHORT).show();
     }
 
 }

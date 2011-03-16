@@ -22,6 +22,7 @@ import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,6 +57,21 @@ public class LogViewActivity extends Activity {
     	String logFile = _smsLogger.getLogFilePath();
     	_textView.setText(Utils.loadTextFile(logFile));
 	
+    	
+    	_textView.setOnFocusChangeListener(new View.OnFocusChangeListener()
+        { 
+          
+           public void onFocusChange(View v, boolean gotFocus)
+           {
+               if (gotFocus)
+               { 
+            	   
+            		String logFile = _smsLogger.getLogFilePath();
+                	_textView.setText(Utils.loadTextFile(logFile));
+            	   	            	   
+               }
+           }
+        });
         
     }
     
@@ -87,7 +103,7 @@ public class LogViewActivity extends Activity {
          MenuItem mItem = null;
          
          mItem = menu.add(0, 1, Menu.NONE, "Refresh");
-        
+         mItem.setIcon(android.R.drawable.ic_menu_rotate);
          return true;
      }
      

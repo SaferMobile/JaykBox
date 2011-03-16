@@ -1,11 +1,14 @@
 package org.safermobile.sms;
 
+import java.io.IOException;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,15 +28,27 @@ public class EditKeywordActivity extends Activity {
 	        
 	        txtEditor = (EditText)findViewById(R.id.editor);
 	
-	        txtEditor.setText(Utils.loadTextFile(KEYWORD_FILE));
+	        String data = Utils.loadTextFile(KEYWORD_FILE);
+	        
+	        if (data == null || data.length() == 0)
+	        {
+	        	try {
+					data = Utils.loadAssetText(this, "keywords.txt");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
+	        
+	        txtEditor.setText(data);
+	        
+	        
 	        
 	        txtEditor.addTextChangedListener(new TextWatcher() { 
 	        	
                 public void  afterTextChanged (Editable s){ 
                 
-                	String newText = s.toString();
                 	
-                	Utils.saveTextFile(KEYWORD_FILE, newText, false);
                 } 
 	            
                 public void  beforeTextChanged  (CharSequence s, int start, int count, int after){ 
@@ -45,6 +60,23 @@ public class EditKeywordActivity extends Activity {
 	            } 
 
 	        });
+	        
+	        txtEditor.setOnFocusChangeListener(new View.OnFocusChangeListener()
+	        { 
+	          
+	           public void onFocusChange(View v, boolean gotFocus)
+	           {
+	               if (!gotFocus)
+	               { 
+	            	   
+	            	   String data = txtEditor.getText().toString();
+	            	   Utils.saveTextFile(KEYWORD_FILE, data, false);
+	            	   	            	   
+	               }
+	           }
+	        });
+	      
+	      
 	     
 	        
 	    }

@@ -10,6 +10,7 @@ import java.util.StringTokenizer;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,6 +18,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
@@ -26,7 +29,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class SMSSenderActivity extends Activity {
+public class SMSSenderActivity extends Activity implements Runnable {
 	
 	private String _fromPhoneNumber;
 	private String _toPhoneNumber;
@@ -35,8 +38,11 @@ public class SMSSenderActivity extends Activity {
     
 	public final static short SMS_DATA_PORT = 7027;
 	boolean _useDataPort = true;
-
+	int _timeDelay = 1000; //1 second
+	ProgressDialog statusDialog;
+	
 	private TextView _textView = null;
+	private ArrayList<String> listMsgs;
 	
 	private final static String SENT = "SMS_SENT";
 	private final static String DELIVERED = "SMS_DELIVERED";
@@ -51,12 +57,13 @@ public class SMSSenderActivity extends Activity {
         
         _textView = (TextView)findViewById(R.id.messageLog);
         
+        _textView.setText(getString(R.string.welcome));
+        
         loadPrefs();
         
     	try
 		{	
     		_smsLogger = new SMSLogger(SMSLogger.MODE_SEND);
-    		_smsLogger.setLogView(_textView);
 		}
 		catch (Exception e)
 		{
@@ -86,7 +93,7 @@ public class SMSSenderActivity extends Activity {
 
         _toPhoneNumber = prefs.getString("pref_default_recipient", "");
         _useDataPort = prefs.getBoolean("pref_use_data", false);
-
+        _timeDelay = Integer.parseInt(prefs.getString("pref_time_delay", "1000"));
     }
     
     private String getMyPhoneNumber(){
@@ -99,8 +106,7 @@ public class SMSSenderActivity extends Activity {
     //---sends an SMS message to another device---
     private void sendSMS(String phoneNumber, String message, boolean useDataPort)
     {        
-    	PendingIntent pi = null;
-    	
+    
     	 PendingIntent sentPI = PendingIntent.getBroadcast(this, 0,
     	            new Intent(SENT), 0);
     	        
@@ -110,14 +116,14 @@ public class SMSSenderActivity extends Activity {
         
         if (!useDataPort)
         {
-        	sms.sendTextMessage(phoneNumber, null, message, pi, null);      
+        	sms.sendTextMessage(phoneNumber, null, message, sentPI, null);      
         }
         else
         {
-        	sms.sendDataMessage(phoneNumber, null, SMS_DATA_PORT, message.getBytes(), pi, null);
+        	sms.sendDataMessage(phoneNumber, null, SMS_DATA_PORT, message.getBytes(), sentPI, null);
         }
         
-        _smsLogger.logSend(_fromPhoneNumber, phoneNumber, message, new Date());
+       
     } 
     
     @Override
@@ -128,9 +134,6 @@ public class SMSSenderActivity extends Activity {
 
 	private void startSMSTest ()
     {
-		
-		_textView.setText("");
-		
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
     	alert.setTitle("Start SMS");
@@ -163,13 +166,87 @@ public class SMSSenderActivity extends Activity {
     private void sendTestMessages (String toPhoneNumber, boolean useDataPort)
     {
     	_smsLogger.rotateLog();
-		
-    	Iterator<String> itMsgs = loadTestMessageList().iterator();
+	
+    	_toPhoneNumber = toPhoneNumber;
     	
-    	while (itMsgs.hasNext())
-    		sendSMS(toPhoneNumber,itMsgs.next(), useDataPort);
-    
+    	statusDialog = ProgressDialog.show(this, "",
+    			"Starting send...", true);
+    	statusDialog.show();
+    	listMsgs = loadTestMessageList();
+
+    	statusDialog.setMax(listMsgs.size());
+    			
+    	Thread thread = new Thread (this);
+    	thread.start ();
+    	
     }
+    
+    public void run ()
+    {
+    	
+    	Iterator<String> itMsgs = listMsgs.iterator();
+    	
+    	int count = 0;
+    	while (itMsgs.hasNext())
+    	{
+    		String nextMsg = itMsgs.next();
+    		sendSMS(_toPhoneNumber,nextMsg, _useDataPort);
+    		
+    		Message msg = new Message();
+    		Bundle data = new Bundle();
+    		data.putString("status", "sending message: \"" + nextMsg + "\"");
+    		count++;
+    		data.putInt("count", count);
+    		msg.setData(data);
+    		handler.sendMessage(msg);
+    		
+    		try {
+				Thread.sleep(_timeDelay);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		
+    	}
+    	
+    	Message msg = new Message();
+		Bundle data = new Bundle();		
+		data.putInt("count", -1);
+		msg.setData(data);
+		handler.sendMessage(msg);
+    }
+    
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+        	
+        	
+        	if (msg.getData()!=null)
+        	{
+        		Bundle data = msg.getData();
+
+        		String status = data.getString("status");
+        		int count = data.getInt("count");
+        		
+        		if (status != null && count != -1)
+        		{
+        			statusDialog.setMessage(status);
+        			statusDialog.setProgress(count);
+        		}
+        		else
+        		{
+        			statusDialog.dismiss();
+        		}
+        	}
+        	else
+        	{
+        		statusDialog.dismiss();
+        	}
+
+        }
+        
+        
+    };
     
     private ArrayList<String> loadTestMessageList ()
     {
@@ -235,8 +312,11 @@ public class SMSSenderActivity extends Activity {
          MenuItem mItem = null;
          
          mItem = menu.add(0, 1, Menu.NONE, "Start Test");
+         mItem.setIcon(android.R.drawable.ic_menu_send);
+         
          mItem = menu.add(0, 2, Menu.NONE, "Settings");
-        
+         mItem.setIcon(android.R.drawable.ic_menu_preferences);
+         
          return true;
      }
      
