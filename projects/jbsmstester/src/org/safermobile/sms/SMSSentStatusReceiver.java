@@ -15,16 +15,18 @@ public class SMSSentStatusReceiver extends BroadcastReceiver {
 	private String _fromPhoneNumber;
 	
 	private String _toMsg;
+	private SMSLogger _smsLogger;
 	
-	public SMSSentStatusReceiver (String fromPhoneNumber, String toPhoneNumber, String msg)
+	public SMSSentStatusReceiver (String fromPhoneNumber, String toPhoneNumber, String msg, SMSLogger smsLogger)
 	{
 		_fromPhoneNumber = fromPhoneNumber;
 		_toPhoneNumber = toPhoneNumber;
 		_toMsg = msg;
+		_smsLogger = smsLogger;
 	}
 	
 	@Override
-	 public void onReceive(Context content, Intent arg1) {
+	 public void onReceive(Context context, Intent arg1) {
 		
 		int resultCode = getResultCode();
 		String resultTxt = "";
@@ -50,7 +52,9 @@ public class SMSSentStatusReceiver extends BroadcastReceiver {
                 break;
         }
         
-        SMSLogger.logError(_fromPhoneNumber, _toPhoneNumber, resultTxt, ts);
+        _smsLogger.logError(_fromPhoneNumber, _toPhoneNumber, resultTxt, ts);
+        
+        Toast.makeText(context, _toPhoneNumber + ": " + resultTxt, Toast.LENGTH_SHORT).show();
     }
 
 }

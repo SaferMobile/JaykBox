@@ -13,21 +13,24 @@ import android.widget.Toast;
 public class SMSReceiver extends BroadcastReceiver {
 
 
-	
+	SMSLogger _smsLogger;
 	 
     @Override
     public void onReceive(Context context, Intent intent) 
     {
-    	/*
-    	try
-		{	
-			SMSLogger.init();
-		}
-		catch (Exception e)
-		{
-			Toast.makeText(context, "Error setting up SMS Log: " + e.getMessage(), Toast.LENGTH_LONG).show();
-		}
-		*/
+    	
+    	if (_smsLogger == null)
+    	{
+	    	try
+			{	
+				_smsLogger = new SMSLogger("recv");
+			}
+			catch (Exception e)
+			{
+				Toast.makeText(context, "Error setting up SMS Log: " + e.getMessage(), Toast.LENGTH_LONG).show();
+			}
+			
+    	}
     	
         //---get the SMS message passed in---
         Bundle bundle = intent.getExtras();        
@@ -46,8 +49,9 @@ public class SMSReceiver extends BroadcastReceiver {
 		        String msg = msgs[i].getMessageBody().toString();
 		        Date rec = new Date(msgs[i].getTimestampMillis());
 		        
-		       // SMSLogger.logReceive(from, to, msg, rec);
+		        _smsLogger.logReceive(from, to, msg, rec);
 		        
+		        Toast.makeText(context, "recvd msg from: " + from, Toast.LENGTH_SHORT).show();
         	}
         }                         
     }

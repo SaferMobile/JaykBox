@@ -1,5 +1,6 @@
 package org.safermobile.sms;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -24,25 +25,38 @@ import android.widget.Toast;
 public class SMSSenderActivity extends Activity {
 	
 	private String thisPhoneNumber;
+	private SMSLogger _smsLogger;
+	private SmsManager sms = SmsManager.getDefault();
+    
+	public final static short SMS_DATA_PORT = 7027;
+	boolean useDataPort = false;
+
+	private TextView textView = null;
 	
+	private final static String SENT = "SMS_SENT";
+	private final static String DELIVERED = "SMS_DELIVERED";
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.log);
         
         thisPhoneNumber = getMyPhoneNumber(); //get the local device number
         
+        textView = (TextView)findViewById(R.id.messageLog);
+        
     	try
 		{	
-			SMSLogger.init();
+    		_smsLogger = new SMSLogger("send");
+    		_smsLogger.setLogView(textView);
 		}
 		catch (Exception e)
 		{
 			Toast.makeText(this, "Error setting up SMS Log: " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
 		
-        SMSLogger.setLogView((TextView)findViewById(R.id.messageLog));
+	
         
     }
     
@@ -54,18 +68,47 @@ public class SMSSenderActivity extends Activity {
         }
     
     //---sends an SMS message to another device---
-    private void sendSMS(String phoneNumber, String message)
+    private void sendSMS(String phoneNumber, String message, boolean useDataPort)
     {        
-        PendingIntent pi = PendingIntent.getActivity(this, 0,
-            new Intent(this, SMSSenderActivity.class), 0);                
-        SmsManager sms = SmsManager.getDefault();
-        sms.sendTextMessage(phoneNumber, null, message, pi, null);      
+    	PendingIntent pi = null;
+    	
+    	 PendingIntent sentPI = PendingIntent.getBroadcast(this, 0,
+    	            new Intent(SENT), 0);
+    	        
+    	 //---when the SMS has been sent---
+         SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(thisPhoneNumber, phoneNumber, message, _smsLogger);
+         registerReceiver(statusRev, new IntentFilter(SENT));
         
-        SMSLogger.logSend(thisPhoneNumber, phoneNumber, message, new Date());
+        if (!useDataPort)
+        {
+        	sms.sendTextMessage(phoneNumber, null, message, pi, null);      
+        }
+        else
+        {
+        	sms.sendDataMessage(phoneNumber, null, SMS_DATA_PORT, message.getBytes(), pi, null);
+        }
+        
+        _smsLogger.logSend(thisPhoneNumber, phoneNumber, message, new Date());
     } 
     
-    private void startSMSTest ()
+    @Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		try {
+			_smsLogger.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	private void startSMSTest ()
     {
+		
+		textView.setText("");
+		
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
     	alert.setTitle("Start SMS");
@@ -78,7 +121,7 @@ public class SMSSenderActivity extends Activity {
     	alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
     	public void onClick(DialogInterface dialog, int whichButton) {
     	  String value = input.getText().toString();
-    	  sendTestMessages (value);
+    	  sendTestMessages (value, useDataPort);
     	  }
     	});
 
@@ -91,12 +134,19 @@ public class SMSSenderActivity extends Activity {
     	alert.show();
     }
     
-    private void sendTestMessages (String toPhoneNumber)
+    private void sendTestMessages (String toPhoneNumber, boolean useDataPort)
     {
+    	try {
+			_smsLogger.rotateLog();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
     	Iterator<String> itMsgs = loadTestMessageList().iterator();
     	
     	while (itMsgs.hasNext())
-    		sendSMS(toPhoneNumber,itMsgs.next());
+    		sendSMS(toPhoneNumber,itMsgs.next(), useDataPort);
     }
     
     private ArrayList<String> loadTestMessageList ()
@@ -114,17 +164,18 @@ public class SMSSenderActivity extends Activity {
     //---sends an SMS message to another device---
     private void sendSMSMonitor(String phoneNumber, String message)
     {        
-    	String SENT = "SMS_SENT";
-        String DELIVERED = "SMS_DELIVERED";
- 
-        PendingIntent sentPI = PendingIntent.getBroadcast(this, 0,
+    	
+        PendingIntent sentPI = null;
+        PendingIntent deliveredPI = null;
+       
+        sentPI = PendingIntent.getBroadcast(this, 0,
             new Intent(SENT), 0);
  
-        PendingIntent deliveredPI = PendingIntent.getBroadcast(this, 0,
+        deliveredPI = PendingIntent.getBroadcast(this, 0,
             new Intent(DELIVERED), 0);
  
         //---when the SMS has been sent---
-        SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(thisPhoneNumber, phoneNumber, message);
+        SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(thisPhoneNumber, phoneNumber, message, _smsLogger);
         registerReceiver(statusRev, new IntentFilter(SENT));
  
         //---when the SMS has been delivered---
@@ -146,11 +197,10 @@ public class SMSSenderActivity extends Activity {
                 }
             }
         }, new IntentFilter(DELIVERED));        
- 
-        SmsManager sms = SmsManager.getDefault();
+        
         
         sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);   
-        SMSLogger.logSend(thisPhoneNumber, phoneNumber, message, new Date());
+        _smsLogger.logSend(thisPhoneNumber, phoneNumber, message, new Date());
 
     }    
     

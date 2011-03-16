@@ -8,37 +8,47 @@ import java.util.Date;
 
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class SMSLogger {
 
 	
-	private final static String TAG = "JBSMS";
-	private static TextView _tvLog;
-	private static File logFile = null;
-	private static BufferedWriter logWriter = null;
+	private final String TAG = "JBSMS";
+	private TextView _tvLog;
+	private File logFile = null;
+	private BufferedWriter logWriter = null;
+	private int lineNum = 1;
 	
-	public static void init () throws IOException
+	private String _logTag = null;
+	
+	public SMSLogger (String logTag) throws IOException
 	{
+		_logTag = logTag;
+		
 		if (logWriter == null)
 		{
 			rotateLog();
 		}
 	}
 	
-	public static void rotateLog () throws IOException
+	public void rotateLog () throws IOException
 	{
+		close();
+		
 		Date logDate = new Date();
-		String filename = "/sdcard/jbsmstest" + logDate.getYear() + logDate.getMonth() + logDate.getDate() + '-' + logDate.getHours() + logDate.getMinutes() + logDate.getSeconds() + ".csv";
+		String filename = "/sdcard/jbsmstest" + "-" + _logTag + "-" + logDate.getYear() + logDate.getMonth() + logDate.getDate() + "-" + logDate.getHours() + logDate.getMinutes() + logDate.getSeconds() + ".csv";
 		logFile = new File(filename);
 		logWriter = new BufferedWriter (new FileWriter(logFile));
+		lineNum = 1;
+		logWriter.append("---------------------------------\n");
 	}
 	
-	public static void setLogView (TextView tvLog)
+	public void setLogView (TextView tvLog)
 	{
 		_tvLog = tvLog;
 	}
 	
-	public static void logSend (String from, String to, String smsMsg, Date sent)
+	public void logSend (String from, String to, String smsMsg, Date sent)
 	{
 		String[] vals = {"sent",from,to,smsMsg,sent.getTime()+""};
 		String log = generateCSV(vals);
@@ -49,19 +59,20 @@ public class SMSLogger {
 			_tvLog.append(log);
 			_tvLog.append("\n");
 
-			
-			try {
-				logWriter.write(log);
-				logWriter.write("\n");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+				
 		}
+
+		try {
+			logWriter.write(log);
+			logWriter.write("\n");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
 	}
 	
-	public static void logReceive (String from, String to, String smsMsg, Date rec)
+	public void logReceive (String from, String to, String smsMsg, Date rec)
 	{
 		String[] vals = {"rec",from,to,smsMsg,rec.getTime()+""};
 		
@@ -72,6 +83,11 @@ public class SMSLogger {
 		{
 			_tvLog.append(log);
 			_tvLog.append("\n");
+		}
+		else
+		{
+
+	    	//
 		}
 		
 
@@ -85,21 +101,23 @@ public class SMSLogger {
 	
 	}
 	
-	public static void logError (String from, String to, String error, Date ts)
+	public void logError (String from, String to, String error, Date ts)
 	{
 		String[] vals = {"err",from,to,error,ts.getTime()+""};
 		Log.i(TAG, generateCSV(vals));
 	}
 	
-	public static void logDelivery (String from, String to, String deliveryStatus, Date ts)
+	public void logDelivery (String from, String to, String deliveryStatus, Date ts)
 	{
 		String[] vals = {"del",from,to,deliveryStatus,ts.getTime()+""};
 		Log.i(TAG, generateCSV(vals));
 	}
 	
-	private static String generateCSV(String[] params)
+	private String generateCSV(String[] params)
 	{
 		StringBuffer csv = new StringBuffer();
+		
+		csv.append(lineNum + ",");
 		
 		for (int i = 0; i < params.length; i++)
 		{
@@ -112,6 +130,17 @@ public class SMSLogger {
 			
 		}
 		
+		lineNum++;
+		
 		return csv.toString();
+	}
+	
+	public void close () throws IOException
+	{
+		if (logWriter != null)
+		{
+			logWriter.flush();
+			logWriter.close();
+		}
 	}
 }
