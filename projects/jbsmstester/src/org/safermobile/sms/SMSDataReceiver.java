@@ -46,7 +46,14 @@ public class SMSDataReceiver extends BroadcastReceiver {
                 
 		        String from = msgs[i].getOriginatingAddress();
 		        String to = msgs[i].getServiceCenterAddress();
-		        String msg = msgs[i].getMessageBody().toString();
+		        
+		        String msg = "";
+		        
+		        if (msgs[i].getMessageBody() != null)
+		        	msg = msgs[i].getMessageBody().toString();
+		        else if (msgs[i].getUserData() != null)
+		        	msg = new String(msgs[i].getUserData());
+		        	
 		        Date rec = new Date(msgs[i].getTimestampMillis());
 		        
 		        _smsLogger.logReceive(from, to, msg, rec);

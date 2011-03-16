@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -24,12 +25,13 @@ import android.widget.Toast;
 
 public class SMSSenderActivity extends Activity {
 	
-	private String thisPhoneNumber;
+	private String _fromPhoneNumber;
+	private String _toPhoneNumber;
 	private SMSLogger _smsLogger;
 	private SmsManager sms = SmsManager.getDefault();
     
 	public final static short SMS_DATA_PORT = 7027;
-	boolean useDataPort = false;
+	boolean useDataPort = true;
 
 	private TextView textView = null;
 	
@@ -42,7 +44,7 @@ public class SMSSenderActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.log);
         
-        thisPhoneNumber = getMyPhoneNumber(); //get the local device number
+        _fromPhoneNumber = getMyPhoneNumber(); //get the local device number
         
         textView = (TextView)findViewById(R.id.messageLog);
         
@@ -76,7 +78,7 @@ public class SMSSenderActivity extends Activity {
     	            new Intent(SENT), 0);
     	        
     	 //---when the SMS has been sent---
-         SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(thisPhoneNumber, phoneNumber, message, _smsLogger);
+         SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(_fromPhoneNumber, phoneNumber, message, _smsLogger);
          registerReceiver(statusRev, new IntentFilter(SENT));
         
         if (!useDataPort)
@@ -88,19 +90,12 @@ public class SMSSenderActivity extends Activity {
         	sms.sendDataMessage(phoneNumber, null, SMS_DATA_PORT, message.getBytes(), pi, null);
         }
         
-        _smsLogger.logSend(thisPhoneNumber, phoneNumber, message, new Date());
+        _smsLogger.logSend(_fromPhoneNumber, phoneNumber, message, new Date());
     } 
     
     @Override
 	protected void onDestroy() {
 		super.onDestroy();
-		
-		try {
-			_smsLogger.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		
 	}
 
@@ -116,12 +111,16 @@ public class SMSSenderActivity extends Activity {
 
     	// Set an EditText view to get user input 
     	final EditText input = new EditText(this);
+    	
+    	if (_toPhoneNumber != null)
+    		input.setText(_toPhoneNumber);
+    	
     	alert.setView(input);
 
     	alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
     	public void onClick(DialogInterface dialog, int whichButton) {
-    	  String value = input.getText().toString();
-    	  sendTestMessages (value, useDataPort);
+    	  _toPhoneNumber = input.getText().toString();
+    	  sendTestMessages (_toPhoneNumber, useDataPort);
     	  }
     	});
 
@@ -147,17 +146,19 @@ public class SMSSenderActivity extends Activity {
     	
     	while (itMsgs.hasNext())
     		sendSMS(toPhoneNumber,itMsgs.next(), useDataPort);
+    	
+    	String logFile = _smsLogger.getLogFilePath();
+    	textView.setText(Utils.loadTextFile(logFile));
     }
     
     private ArrayList<String> loadTestMessageList ()
     {
     	ArrayList<String> listMsg = new ArrayList<String>();
     	
-    	listMsg.add("hello");
-    	listMsg.add("ciao");
-    	listMsg.add("foo");
-    	listMsg.add("bar");
-    	
+    	String kwlist = Utils.loadTextFile(EditKeywordActivity.KEYWORD_FILE);
+    	StringTokenizer st = new StringTokenizer(kwlist,"\n");
+    	while (st.hasMoreTokens())
+    		listMsg.add(st.nextToken());
     	
     	return listMsg;
     }
@@ -175,7 +176,7 @@ public class SMSSenderActivity extends Activity {
             new Intent(DELIVERED), 0);
  
         //---when the SMS has been sent---
-        SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(thisPhoneNumber, phoneNumber, message, _smsLogger);
+        SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(_fromPhoneNumber, phoneNumber, message, _smsLogger);
         registerReceiver(statusRev, new IntentFilter(SENT));
  
         //---when the SMS has been delivered---
@@ -200,7 +201,7 @@ public class SMSSenderActivity extends Activity {
         
         
         sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);   
-        _smsLogger.logSend(thisPhoneNumber, phoneNumber, message, new Date());
+        _smsLogger.logSend(_fromPhoneNumber, phoneNumber, message, new Date());
 
     }    
     

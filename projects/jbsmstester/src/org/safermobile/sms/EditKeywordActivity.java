@@ -13,7 +13,10 @@ import android.widget.Toast;
 public class EditKeywordActivity extends Activity {
 
 	private EditText txtEditor;
-	private String keywordPath = "/sdcard/smskeywords.txt";
+	
+	public final static String BASE_PATH = "/sdcard/jbsms";
+
+	public final static String KEYWORD_FILE = BASE_PATH + "/keywords.txt";
 	
 	 @Override
 	    public void onCreate(Bundle savedInstanceState) {
@@ -22,12 +25,15 @@ public class EditKeywordActivity extends Activity {
 	        
 	        txtEditor = (EditText)findViewById(R.id.editor);
 	
-	        txtEditor.setText(loadFile(keywordPath));
+	        txtEditor.setText(Utils.loadTextFile(KEYWORD_FILE));
 	        
 	        txtEditor.addTextChangedListener(new TextWatcher() { 
 	        	
                 public void  afterTextChanged (Editable s){ 
                 
+                	String newText = s.toString();
+                	
+                	Utils.saveTextFile(KEYWORD_FILE, newText, false);
                 } 
 	            
                 public void  beforeTextChanged  (CharSequence s, int start, int count, int after){ 

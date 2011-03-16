@@ -69,12 +69,19 @@ public class Utils {
 		/*
 		 * Load the log file text
 		 */
-		 public static boolean saveTextFile (String path, String contents)
+		 public static boolean saveTextFile (String path, String contents, boolean append)
 		    {
 			 	
 		    	try {
 		    		
-		    		 FileWriter writer = new FileWriter( path, false );
+		    		//make sure folders all exist
+		    		File file = new File(path);
+		    		if (!file.exists())
+		    			new File(file.getParent()).mkdirs();
+		    		
+		    		//now write the file
+		    		
+		    		 FileWriter writer = new FileWriter( file, append );
                      writer.write( contents );
                      
                      writer.close();

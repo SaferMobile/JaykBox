@@ -15,17 +15,19 @@ public class SMSLogger {
 	
 	private final String TAG = "JBSMS";
 	private TextView _tvLog;
-	private File logFile = null;
-	private BufferedWriter logWriter = null;
+
 	private int lineNum = 1;
 	
 	private String _logTag = null;
+	
+	private String basePath = "/sdcard/jbsms";
+	private String logFilePath = null;
 	
 	public SMSLogger (String logTag) throws IOException
 	{
 		_logTag = logTag;
 		
-		if (logWriter == null)
+		if (logFilePath == null)
 		{
 			rotateLog();
 		}
@@ -33,14 +35,18 @@ public class SMSLogger {
 	
 	public void rotateLog () throws IOException
 	{
-		close();
+		File fileDir = new File(basePath);
+		if (!fileDir.exists())
+			fileDir.mkdir();
 		
 		Date logDate = new Date();
-		String filename = "/sdcard/jbsmstest" + "-" + _logTag + "-" + logDate.getYear() + logDate.getMonth() + logDate.getDate() + "-" + logDate.getHours() + logDate.getMinutes() + logDate.getSeconds() + ".csv";
-		logFile = new File(filename);
-		logWriter = new BufferedWriter (new FileWriter(logFile));
-		lineNum = 1;
-		logWriter.append("---------------------------------\n");
+		logFilePath = basePath + "/jbsmstest" + "-" + _logTag + "-" + logDate.getYear() + logDate.getMonth() + logDate.getDate() + ".csv";
+		
+	}
+	
+	public String getLogFilePath ()
+	{
+		return logFilePath;
 	}
 	
 	public void setLogView (TextView tvLog)
@@ -50,67 +56,66 @@ public class SMSLogger {
 	
 	public void logSend (String from, String to, String smsMsg, Date sent)
 	{
-		String[] vals = {"sent",from,to,smsMsg,sent.getTime()+""};
-		String log = generateCSV(vals);
+		String[] vals = {"sent",from,to,smsMsg,sent.toGMTString()};
+		String log = generateCSV(vals) + "\n";
 		Log.i(TAG, log);
 		
 		if (_tvLog != null)
 		{
 			_tvLog.append(log);
-			_tvLog.append("\n");
 
-				
 		}
-
-		try {
-			logWriter.write(log);
-			logWriter.write("\n");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+		Utils.saveTextFile(logFilePath, log, true);
 	
 	}
 	
 	public void logReceive (String from, String to, String smsMsg, Date rec)
 	{
-		String[] vals = {"rec",from,to,smsMsg,rec.getTime()+""};
+		String[] vals = {"rec",from,to,smsMsg,rec.toGMTString()};
 		
-		String log = generateCSV(vals);
+		String log = generateCSV(vals) + "\n";
+		
 		Log.i(TAG, log);
 		
 		if (_tvLog != null)
 		{
 			_tvLog.append(log);
-			_tvLog.append("\n");
 		}
-		else
-		{
 
-	    	//
-		}
-		
+		Utils.saveTextFile(logFilePath, log, true);
 
-		try {
-			logWriter.write(log);
-			logWriter.write("\n");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	
 	}
 	
 	public void logError (String from, String to, String error, Date ts)
 	{
-		String[] vals = {"err",from,to,error,ts.getTime()+""};
-		Log.i(TAG, generateCSV(vals));
+		String[] vals = {"err",from,to,error,ts.toGMTString()};
+		String log = generateCSV(vals) + "\n";
+		Log.i(TAG, log);
+		
+		if (_tvLog != null)
+		{
+			_tvLog.append(log);
+		}
+		
+		Utils.saveTextFile(logFilePath, log, true);
+
 	}
 	
 	public void logDelivery (String from, String to, String deliveryStatus, Date ts)
 	{
-		String[] vals = {"del",from,to,deliveryStatus,ts.getTime()+""};
-		Log.i(TAG, generateCSV(vals));
+		String[] vals = {"del",from,to,deliveryStatus,ts.toGMTString()};
+		String log = generateCSV(vals) + "\n";
+		Log.i(TAG, log);
+		
+		if (_tvLog != null)
+		{
+			_tvLog.append(log);
+		}
+		
+		Utils.saveTextFile(logFilePath, log, true);
+
 	}
 	
 	private String generateCSV(String[] params)
@@ -135,12 +140,5 @@ public class SMSLogger {
 		return csv.toString();
 	}
 	
-	public void close () throws IOException
-	{
-		if (logWriter != null)
-		{
-			logWriter.flush();
-			logWriter.close();
-		}
-	}
+	
 }
