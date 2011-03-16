@@ -53,32 +53,16 @@ public class LogViewActivity extends Activity {
         
 		_smsLogger = new SMSLogger(mode);
         
-		
-    	String logFile = _smsLogger.getLogFilePath();
-    	_textView.setText(Utils.loadTextFile(logFile));
-	
-    	
-    	_textView.setOnFocusChangeListener(new View.OnFocusChangeListener()
-        { 
-          
-           public void onFocusChange(View v, boolean gotFocus)
-           {
-               if (gotFocus)
-               { 
-            	   
-            		String logFile = _smsLogger.getLogFilePath();
-                	_textView.setText(Utils.loadTextFile(logFile));
-            	   	            	   
-               }
-           }
-        });
         
     }
     
-    @Override
+
+	@Override
 	protected void onResume() {
 		super.onResume();
 		
+		String logFile = _smsLogger.getLogFilePath();
+    	_textView.setText(Utils.loadTextFile(logFile));
 	
 	}
 
@@ -103,6 +87,9 @@ public class LogViewActivity extends Activity {
          MenuItem mItem = null;
          
          mItem = menu.add(0, 1, Menu.NONE, "Refresh");
+         mItem.setIcon(android.R.drawable.ic_menu_agenda);
+         
+         mItem = menu.add(0, 2, Menu.NONE, "Rotate Log");
          mItem.setIcon(android.R.drawable.ic_menu_rotate);
          return true;
      }
@@ -120,7 +107,14 @@ public class LogViewActivity extends Activity {
  			String logFile = _smsLogger.getLogFilePath();
  	    	_textView.setText(Utils.loadTextFile(logFile));
  		}
- 		
+ 		else if (item.getItemId() == 2)
+ 		{
+
+ 	    	_smsLogger.rotateLogFile();
+ 	    	
+ 	   	String logFile = _smsLogger.getLogFilePath();
+	    	_textView.setText(Utils.loadTextFile(logFile));
+ 		}
          return true;
  	}
 }

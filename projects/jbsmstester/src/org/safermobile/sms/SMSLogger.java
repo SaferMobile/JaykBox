@@ -31,18 +31,34 @@ public class SMSLogger {
 		
 		if (logFilePath == null)
 		{
-			rotateLog();
+			init();
 		}
 	}
 	
-	public void rotateLog () 
+	public void init ()
 	{
+		
 		File fileDir = new File(basePath);
 		if (!fileDir.exists())
 			fileDir.mkdir();
 		
+		//load existing log data
+		logFilePath = basePath + "/jbsmstest" + "-" + _logMode + ".csv";
+		
+	}
+	
+	public void rotateLogFile () 
+	{
+		
+		String logData = Utils.loadTextFile(logFilePath);
+		
+		//copy it to new file
 		Date logDate = new Date();
-		logFilePath = basePath + "/jbsmstest" + "-" + _logMode + "-" + logDate.getYear() + logDate.getMonth() + logDate.getDate() + ".csv";
+		String newLogFilePath = basePath + "/jbsmstest" + "-" + _logMode + "-" + logDate.getYear() + logDate.getMonth() + logDate.getDate() + "-" + logDate.getHours() + logDate.getMinutes() + logDate.getSeconds() + ".csv";
+		Utils.saveTextFile(newLogFilePath, newLogFilePath, false);
+		
+		Utils.saveTextFile(logFilePath, "", false);
+		
 		
 	}
 	
@@ -55,6 +71,23 @@ public class SMSLogger {
 	{
 		_tvLog = tvLog;
 	}
+	
+	public void logStart (String operator, String cid, String lac, Date sent)
+	{
+		String[] vals = {"start",operator, cid, lac,sent.toGMTString()};
+		String log = generateCSV(vals) + "\n";
+		Log.i(TAG, log);
+		
+		if (_tvLog != null)
+		{
+			_tvLog.append(log);
+
+		}
+		
+		Utils.saveTextFile(logFilePath, log, true);
+	
+	}
+	
 	
 	public void logSend (String from, String to, String smsMsg, Date sent)
 	{

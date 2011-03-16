@@ -51,7 +51,7 @@ public class SMSReceiver extends BroadcastReceiver {
 		        
 		        _smsLogger.logReceive("recv-text",from, to, msg, rec);
 		        
-		        Toast.makeText(context, "recvd msg from: " + from, Toast.LENGTH_SHORT).show();
+		        Toast.makeText(context, "recvd text msg from " + from + ": \"" + msg + "\"" , Toast.LENGTH_SHORT).show();
         	}
         }                         
     }

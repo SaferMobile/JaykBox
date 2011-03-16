@@ -12,17 +12,21 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.telephony.CellLocation;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -30,12 +34,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class SMSSenderActivity extends Activity implements Runnable {
-	
-	private String _fromPhoneNumber;
-	private String _toPhoneNumber;
+
 	private SMSLogger _smsLogger;
 	private SmsManager sms = SmsManager.getDefault();
-    
+	private TelephonyManager _telMgr;
+
+	private String _fromPhoneNumber;
+	private String _toPhoneNumber;
+	private int cid;
+	private int lac;
+	private String netOperator;
+	
 	public final static short SMS_DATA_PORT = 7027;
 	boolean _useDataPort = true;
 	int _timeDelay = 1000; //1 second
@@ -70,6 +79,8 @@ public class SMSSenderActivity extends Activity implements Runnable {
 			Toast.makeText(this, "Error setting up SMS Log: " + e.getMessage(), Toast.LENGTH_LONG).show();
 		}
 		
+		_telMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+
 	
         
     }
@@ -134,6 +145,10 @@ public class SMSSenderActivity extends Activity implements Runnable {
 
 	private void startSMSTest ()
     {
+		
+		getLocationInfo();
+		_smsLogger.logStart(netOperator, cid+"", lac+"", new Date());
+		
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
     	alert.setTitle("Start SMS");
@@ -163,9 +178,25 @@ public class SMSSenderActivity extends Activity implements Runnable {
     	alert.show();
     }
     
+	
+	private void getLocationInfo ()
+	{
+		
+		CellLocation location = (CellLocation) _telMgr.getCellLocation();
+		
+		if (location instanceof GsmCellLocation)
+		{
+			cid = ((GsmCellLocation)location).getCid();
+			lac = ((GsmCellLocation)location).getLac();
+			
+		}
+		
+		netOperator = _telMgr.getNetworkOperator();
+	
+	}
+	
     private void sendTestMessages (String toPhoneNumber, boolean useDataPort)
     {
-    	_smsLogger.rotateLog();
 	
     	_toPhoneNumber = toPhoneNumber;
     	
@@ -317,6 +348,9 @@ public class SMSSenderActivity extends Activity implements Runnable {
          mItem = menu.add(0, 2, Menu.NONE, "Settings");
          mItem.setIcon(android.R.drawable.ic_menu_preferences);
          
+         mItem = menu.add(0, 3, Menu.NONE, "About");
+         mItem.setIcon(android.R.drawable.ic_menu_help);
+         
          return true;
      }
      
@@ -337,7 +371,25 @@ public class SMSSenderActivity extends Activity implements Runnable {
         	startActivityForResult(new Intent(getBaseContext(), SettingsActivity.class), 1);
 
  		}
+ 		else if (item.getItemId() == 3)
+ 		{
+ 			String version = getVersionName( this, SMSSenderActivity.class);
+ 			String aboutMsg = "SMSTester: " + version + "\ncontact: nathan@guardianproject.info";
+ 			
+ 			Toast.makeText(this, aboutMsg, Toast.LENGTH_LONG).show();
+ 		}
  		
          return true;
+ 	}
+ 	
+ 	public static String getVersionName(Context context, Class cls) 
+ 	{
+ 	  try {
+ 	    ComponentName comp = new ComponentName(context, cls);
+ 	    PackageInfo pinfo = context.getPackageManager().getPackageInfo(comp.getPackageName(), 0);
+ 	    return pinfo.versionName;
+ 	  } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+ 	    return null;
+ 	  }
  	}
 }

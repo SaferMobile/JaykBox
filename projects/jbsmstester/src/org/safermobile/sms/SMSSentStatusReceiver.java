@@ -52,7 +52,10 @@ public class SMSSentStatusReceiver extends BroadcastReceiver {
                 break;
         }
         
-        _smsLogger.logError(_fromPhoneNumber, _toPhoneNumber, resultTxt, ts);
+        if (resultTxt.equals("sent"))
+        	_smsLogger.logSend(_fromPhoneNumber, _toPhoneNumber, _toMsg, ts);
+        else
+        	_smsLogger.logError(_fromPhoneNumber, _toPhoneNumber, resultTxt, ts);
         
     }
 
