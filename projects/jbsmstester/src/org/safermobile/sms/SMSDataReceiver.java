@@ -6,8 +6,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.telephony.CellLocation;
 import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.widget.Toast;
 
 public class SMSDataReceiver extends BroadcastReceiver {
@@ -15,10 +17,20 @@ public class SMSDataReceiver extends BroadcastReceiver {
 
 	SMSLogger _smsLogger;
 	 
+
+	private TelephonyManager _telMgr;
+
+	private int cid;
+	private int lac;
+	private String operator;
+	
+	
     @Override
     public void onReceive(Context context, Intent intent) 
     {
-    	
+    	if (_telMgr==null)
+			_telMgr = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+
     	if (_smsLogger == null)
     	{
 	    	try
@@ -56,10 +68,26 @@ public class SMSDataReceiver extends BroadcastReceiver {
 		        	
 		        Date rec = new Date(msgs[i].getTimestampMillis());
 		        
-		        _smsLogger.logReceive("recv-data",from, to, msg, rec);
+		        _smsLogger.logReceive("recv-data",from, to, msg, rec, operator, cid+"", lac+"");
 		        
 		        Toast.makeText(context, "recvd DATA msg from " + from + ": \"" + msg + "\"" , Toast.LENGTH_SHORT).show();
         	}
         }                         
     }
+    
+    private void getLocationInfo ()
+	{
+		
+		CellLocation location = (CellLocation) _telMgr.getCellLocation();
+		
+		if (location instanceof GsmCellLocation)
+		{
+			cid = ((GsmCellLocation)location).getCid();
+			lac = ((GsmCellLocation)location).getLac();
+			
+		}
+		
+		operator = _telMgr.getNetworkOperator();
+	
+	}
 }

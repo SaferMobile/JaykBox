@@ -218,6 +218,7 @@ public class SMSSenderActivity extends Activity implements Runnable {
     	
     	statusDialog = ProgressDialog.show(this, "",
     			"Starting send...", true);
+    	statusDialog.setCancelable(true);
     	statusDialog.show();
     	listMsgs = loadTestMessageList();
 

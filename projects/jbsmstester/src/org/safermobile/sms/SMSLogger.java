@@ -105,9 +105,9 @@ public class SMSLogger {
 	
 	}
 	
-	public void logReceive (String mode, String from, String to, String smsMsg, Date rec)
+	public void logReceive (String mode, String from, String to, String smsMsg, Date rec, String operator, String cid, String lac)
 	{
-		String[] vals = {mode,from,to,smsMsg,rec.toGMTString()};
+		String[] vals = {mode,from,to,smsMsg,rec.toGMTString(),operator,cid,lac};
 		
 		String log = generateCSV(vals) + "\n";
 		
