@@ -43,11 +43,16 @@ public class SMSSenderActivity extends Activity implements Runnable {
 	private String _toPhoneNumber;
 	private int cid;
 	private int lac;
-	private String netOperator;
+	private String operator;
 	
 	public final static short SMS_DATA_PORT = 7027;
 	boolean _useDataPort = true;
 	int _timeDelay = 1000; //1 second
+	boolean _doLoop = false;
+	boolean keepRunning = false;
+	
+	Thread runThread;
+	
 	ProgressDialog statusDialog;
 	
 	private TextView _textView = null;
@@ -105,6 +110,7 @@ public class SMSSenderActivity extends Activity implements Runnable {
         _toPhoneNumber = prefs.getString("pref_default_recipient", "");
         _useDataPort = prefs.getBoolean("pref_use_data", false);
         _timeDelay = Integer.parseInt(prefs.getString("pref_time_delay", "1000"));
+        _doLoop = prefs.getBoolean("pref_loop", false);
     }
     
     private String getMyPhoneNumber(){
@@ -121,8 +127,11 @@ public class SMSSenderActivity extends Activity implements Runnable {
     	 PendingIntent sentPI = PendingIntent.getBroadcast(this, 0,
     	            new Intent(SENT), 0);
     	        
+    	 getLocationInfo();
+ 		_smsLogger.logStart(operator, cid+"", lac+"", new Date());
+ 		
     	 //---when the SMS has been sent---
-         SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(_fromPhoneNumber, phoneNumber, message, _smsLogger);
+         SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(_fromPhoneNumber, phoneNumber, message, operator, cid+"", lac+"",_smsLogger);
          registerReceiver(statusRev, new IntentFilter(SENT));
         
         if (!useDataPort)
@@ -143,11 +152,18 @@ public class SMSSenderActivity extends Activity implements Runnable {
 		
 	}
 
+    private void stopSMSTest ()
+    {
+    	_doLoop = false;
+    	keepRunning = false;
+    	
+    }
+    
 	private void startSMSTest ()
     {
-		
+		loadPrefs();
 		getLocationInfo();
-		_smsLogger.logStart(netOperator, cid+"", lac+"", new Date());
+		_smsLogger.logStart(operator, cid+"", lac+"", new Date());
 		
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -191,7 +207,7 @@ public class SMSSenderActivity extends Activity implements Runnable {
 			
 		}
 		
-		netOperator = _telMgr.getNetworkOperator();
+		operator = _telMgr.getNetworkOperator();
 	
 	}
 	
@@ -207,37 +223,42 @@ public class SMSSenderActivity extends Activity implements Runnable {
 
     	statusDialog.setMax(listMsgs.size());
     			
-    	Thread thread = new Thread (this);
-    	thread.start ();
+    	runThread = new Thread (this);
+    	runThread.start ();
     	
     }
     
     public void run ()
     {
+    	keepRunning = true;
     	
-    	Iterator<String> itMsgs = listMsgs.iterator();
-    	
-    	int count = 0;
-    	while (itMsgs.hasNext())
+    	while (_doLoop)
     	{
-    		String nextMsg = itMsgs.next();
-    		sendSMS(_toPhoneNumber,nextMsg, _useDataPort);
-    		
-    		Message msg = new Message();
-    		Bundle data = new Bundle();
-    		data.putString("status", "sending message: \"" + nextMsg + "\"");
-    		count++;
-    		data.putInt("count", count);
-    		msg.setData(data);
-    		handler.sendMessage(msg);
-    		
-    		try {
-				Thread.sleep(_timeDelay);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    		
+    	
+	    	Iterator<String> itMsgs = listMsgs.iterator();
+	    	
+	    	int count = 0;
+	    	while (keepRunning && itMsgs.hasNext())
+	    	{
+	    		String nextMsg = itMsgs.next();
+	    		sendSMS(_toPhoneNumber,nextMsg, _useDataPort);
+	    		
+	    		Message msg = new Message();
+	    		Bundle data = new Bundle();
+	    		data.putString("status", "sending message: \"" + nextMsg + "\"");
+	    		count++;
+	    		data.putInt("count", count);
+	    		msg.setData(data);
+	    		handler.sendMessage(msg);
+	    		
+	    		try {
+					Thread.sleep(_timeDelay);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	    		
+	    	}
     	}
     	
     	Message msg = new Message();
@@ -304,7 +325,7 @@ public class SMSSenderActivity extends Activity implements Runnable {
             new Intent(DELIVERED), 0);
  
         //---when the SMS has been sent---
-        SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(_fromPhoneNumber, phoneNumber, message, _smsLogger);
+        SMSSentStatusReceiver statusRev = new SMSSentStatusReceiver(_fromPhoneNumber, phoneNumber, message, operator, cid+"", lac+"", _smsLogger);
         registerReceiver(statusRev, new IntentFilter(SENT));
  
         //---when the SMS has been delivered---
@@ -329,7 +350,7 @@ public class SMSSenderActivity extends Activity implements Runnable {
         
         
         sms.sendTextMessage(phoneNumber, null, message, sentPI, deliveredPI);   
-        _smsLogger.logSend(_fromPhoneNumber, phoneNumber, message, new Date());
+        _smsLogger.logSend(_fromPhoneNumber, phoneNumber, message, new Date(), operator, cid+"", lac+"" );
 
     }    
     
@@ -342,13 +363,16 @@ public class SMSSenderActivity extends Activity implements Runnable {
          
          MenuItem mItem = null;
          
-         mItem = menu.add(0, 1, Menu.NONE, "Start Test");
+         mItem = menu.add(0, 1, Menu.NONE, "Start");
          mItem.setIcon(android.R.drawable.ic_menu_send);
          
-         mItem = menu.add(0, 2, Menu.NONE, "Settings");
+         mItem = menu.add(0, 2, Menu.NONE, "Stop");
+         mItem.setIcon(android.R.drawable.ic_media_pause);
+         
+         mItem = menu.add(0, 3, Menu.NONE, "Settings");
          mItem.setIcon(android.R.drawable.ic_menu_preferences);
          
-         mItem = menu.add(0, 3, Menu.NONE, "About");
+         mItem = menu.add(0, 4, Menu.NONE, "About");
          mItem.setIcon(android.R.drawable.ic_menu_help);
          
          return true;
@@ -368,10 +392,14 @@ public class SMSSenderActivity extends Activity implements Runnable {
  		}
  		else if (item.getItemId() == 2)
  		{
+ 			stopSMSTest();
+ 		}
+ 		else if (item.getItemId() == 3)
+ 		{
         	startActivityForResult(new Intent(getBaseContext(), SettingsActivity.class), 1);
 
  		}
- 		else if (item.getItemId() == 3)
+ 		else if (item.getItemId() == 4)
  		{
  			String version = getVersionName( this, SMSSenderActivity.class);
  			String aboutMsg = "SMSTester: " + version + "\ncontact: nathan@guardianproject.info";

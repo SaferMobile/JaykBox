@@ -89,9 +89,9 @@ public class SMSLogger {
 	}
 	
 	
-	public void logSend (String from, String to, String smsMsg, Date sent)
+	public void logSend (String from, String to, String smsMsg, Date sent, String operator, String cid, String lac)
 	{
-		String[] vals = {"sent",from,to,smsMsg,sent.toGMTString()};
+		String[] vals = {"sent",from,to,smsMsg,sent.toGMTString(),operator,cid,lac};
 		String log = generateCSV(vals) + "\n";
 		Log.i(TAG, log);
 		
@@ -123,9 +123,9 @@ public class SMSLogger {
 	
 	}
 	
-	public void logError (String from, String to, String error, Date ts)
+	public void logError (String from, String to, String error, Date ts, String operator, String cid, String lac)
 	{
-		String[] vals = {"err",from,to,error,ts.toGMTString()};
+		String[] vals = {"err",from,to,error,ts.toGMTString(),operator,cid,lac};
 		String log = generateCSV(vals) + "\n";
 		Log.i(TAG, log);
 		

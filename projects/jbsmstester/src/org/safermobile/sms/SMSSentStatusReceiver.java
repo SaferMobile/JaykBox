@@ -13,15 +13,22 @@ public class SMSSentStatusReceiver extends BroadcastReceiver {
 
 	private String _toPhoneNumber;
 	private String _fromPhoneNumber;
+	private String _operator;
+	private String _cid;
+	private String _lac;
 	
 	private String _toMsg;
 	private SMSLogger _smsLogger;
 	
-	public SMSSentStatusReceiver (String fromPhoneNumber, String toPhoneNumber, String msg, SMSLogger smsLogger)
+	public SMSSentStatusReceiver (String fromPhoneNumber, String toPhoneNumber, String msg, String operator, String cid, String lac, SMSLogger smsLogger)
 	{
 		_fromPhoneNumber = fromPhoneNumber;
 		_toPhoneNumber = toPhoneNumber;
 		_toMsg = msg;
+		_operator = operator;
+		_cid = cid;
+		_lac = lac;
+		
 		_smsLogger = smsLogger;
 	}
 	
@@ -53,9 +60,9 @@ public class SMSSentStatusReceiver extends BroadcastReceiver {
         }
         
         if (resultTxt.equals("sent"))
-        	_smsLogger.logSend(_fromPhoneNumber, _toPhoneNumber, _toMsg, ts);
+        	_smsLogger.logSend(_fromPhoneNumber, _toPhoneNumber, _toMsg, ts, _operator, _cid, _lac);
         else
-        	_smsLogger.logError(_fromPhoneNumber, _toPhoneNumber, resultTxt, ts);
+        	_smsLogger.logError(_fromPhoneNumber, _toPhoneNumber, resultTxt, ts, _operator, _cid, _lac);
         
     }
 
