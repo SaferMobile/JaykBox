@@ -26,6 +26,13 @@ android:title="Use Data Port"
 android:summary="Send SMS as data messages not text"
 android:enabled="true"/> 
 
+<CheckBoxPreference 
+android:defaultValue="false" 
+android:key="pref_loop"
+android:title="Loop Test"
+android:summary="Keep Running Test Until I Say Stop"
+android:enabled="true"/> 
+
 </PreferenceCategory>
 
 
