@@ -14,7 +14,6 @@ public class SMSLogger {
 
 	
 	private final String TAG = "JBSMS";
-	private TextView _tvLog;
 
 	private String _logMode = null;
 	
@@ -67,22 +66,13 @@ public class SMSLogger {
 		return logFilePath;
 	}
 	
-	public void setLogView (TextView tvLog)
-	{
-		_tvLog = tvLog;
-	}
-	
+
 	public void logStart (String operator, String cid, String lac, Date sent)
 	{
 		String[] vals = {"start",operator, cid, lac,sent.toGMTString()};
 		String log = generateCSV(vals) + "\n";
 		Log.i(TAG, log);
 		
-		if (_tvLog != null)
-		{
-			_tvLog.append(log);
-
-		}
 		
 		Utils.saveTextFile(logFilePath, log, true);
 	
@@ -94,12 +84,6 @@ public class SMSLogger {
 		String[] vals = {"sent",from,to,smsMsg,sent.toGMTString(),operator,cid,lac};
 		String log = generateCSV(vals) + "\n";
 		Log.i(TAG, log);
-		
-		if (_tvLog != null)
-		{
-			_tvLog.append(log);
-
-		}
 		
 		Utils.saveTextFile(logFilePath, log, true);
 	
@@ -113,10 +97,6 @@ public class SMSLogger {
 		
 		Log.i(TAG, log);
 		
-		if (_tvLog != null)
-		{
-			_tvLog.append(log);
-		}
 
 		Utils.saveTextFile(logFilePath, log, true);
 
@@ -129,10 +109,6 @@ public class SMSLogger {
 		String log = generateCSV(vals) + "\n";
 		Log.i(TAG, log);
 		
-		if (_tvLog != null)
-		{
-			_tvLog.append(log);
-		}
 		
 		Utils.saveTextFile(logFilePath, log, true);
 
@@ -144,10 +120,6 @@ public class SMSLogger {
 		String log = generateCSV(vals) + "\n";
 		Log.i(TAG, log);
 		
-		if (_tvLog != null)
-		{
-			_tvLog.append(log);
-		}
 		
 		Utils.saveTextFile(logFilePath, log, true);
 
