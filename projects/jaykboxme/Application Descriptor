@@ -1,0 +1,10 @@
+MIDlet-1: HTTPS Tester,,org.safermobile.micro.HTTPSTester
+MIDlet-2: org.safermobile.micro.SecureSocketTesterer,,SecureSocketTester
+MIDlet-3: TopSiteListTester,,org.safermobile.micro.TopSiteListTester
+MIDlet-4: SMSTester,,org.safermobile.micro.SMSTester
+MIDlet-Jar-URL: jaykboxme.jar
+MIDlet-Name: jaykboxme MIDlet Suite
+MIDlet-Vendor: MIDlet Suite Vendor
+MIDlet-Version: 1.0.0
+MicroEdition-Configuration: CLDC-1.0
+MicroEdition-Profile: MIDP-2.0
