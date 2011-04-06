@@ -88,4 +88,30 @@ public class SMSTester extends MIDlet implements CommandListener, SMSListener {
 	 */
 	protected void pauseApp() {}
 
+	private void getSystemProps ()
+	{
+		
+		System.getProperty("");
+		/*
+		 * Nokia
+System.getProperty("com.nokia.mid.imei");
+System.getProperty("phone. imei");
+System.getProperty("com.nokia.IMEI");
+System.getProperty("com.nokia.mid.cellid")
+com.nokia.mid.networkid
+com.nokia.mid.cellid
+
+Siemens (BenQ?)
+System.getProperty( " com.siemens.IMEI" );
+
+SonyEricsson
+System.getProperty("com.sonyericsson.imei" );
+
+Motorola
+System.getProperty("IMEI" );
+
+
+		 */
+		
+	}
 }
